@@ -1,0 +1,67 @@
+:root {
+  /* Light theme (default) */
+  --bg-primary: #f9f9f9;
+  --bg-secondary: #ffffff;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --accent-color: #2e86ab;
+  --accent-hover: #1b4d66;
+  --card-bg: #ffffff;
+  --card-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --input-border: #ccc;
+  --footer-bg: #2c3e50;
+  --footer-text: #ffffff;
+  --btn-primary-bg: #2e86ab;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: transparent;
+  --btn-secondary-text: #2c3e50;
+  --landing-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --feature-card-bg: #ffffff;
+  --result-card-bg: #f8f9fa;
+}
+
+.dark {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --accent-color: #4fa8c9;
+  --accent-hover: #7bc1db;
+  --card-bg: #2d2d2d;
+  --card-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  --input-border: #444;
+  --footer-bg: #1a1a1a;
+  --footer-text: #e0e0e0;
+  --btn-primary-bg: #4fa8c9;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: transparent;
+  --btn-secondary-text: #e0e0e0;
+  --landing-gradient: linear-gradient(135deg, #2d3436 0%, #2c3e50 100%);
+  --feature-card-bg: #2d2d2d;
+  --result-card-bg: #2d2d2d;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 8px;
+  border-radius: 50%;
+  z-index: 50;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dark .theme-toggle {
+  background-color: #4a4a4a;
+}

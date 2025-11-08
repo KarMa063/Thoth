@@ -1,0 +1,10 @@
+# Ignore these folders entirely
+model/
+Data/
+
+# Always ignore OS/system files
+.DS_Store
+Thumbs.db
+
+# Keep Frontend folder
+!Frontend/
