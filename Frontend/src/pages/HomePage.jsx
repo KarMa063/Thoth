@@ -1,121 +1,94 @@
-import React, { useState, useEffect } from "react";
-import Footer from "../components/Footer";
-import "./Pages.css";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
-function Home({ onLogout }) {
+export default function HomePage() {
+  const { user } = useAuth();
   const [text, setText] = useState("");
-  const [language, setLanguage] = useState("english");
-  const [results, setResults] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [author, setAuthor] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [out, setOut] = useState("");
 
-  const handleAnalyze = () => {
-    if (!text.trim()) return;
-    
-    setIsAnalyzing(true);
-    
+  // Placeholder – replace with your API call later
+  async function handleRewrite() {
+    if (!text.trim() || !author) return alert("Enter text and choose an author.");
+    setLoading(true);
     setTimeout(() => {
-      setResults({
-        authorMatch: {
-          english: "George Orwell",
-          nepali: "Laxmi Prasad Devkota",
-          similarity: "78%"
-        },
-        themes: ["Nature", "Identity", "Conflict", "Transformation"],
-        sentiment: "Mostly positive with elements of reflection",
-        complexity: "Moderate to high",
-        uniqueWords: 127
-      });
-      setIsAnalyzing(false);
-    }, 1500);
-  };
+      setOut(`🔧 [Demo] Rewritten in the style of ${author}:\n\n${text}\n\n— (Integrate /rewrite API here)`);
+      setLoading(false);
+    }, 850);
+  }
 
   return (
-    <div className="page-container">
-      <div className="dashboard">
-        <div className="dashboard-header">
-          <h1 className="dashboard-title">Thoth Analysis Dashboard</h1>
-          <button className="logout-btn" onClick={() => onLogout(false)}>
-            Logout
-          </button>
-        </div>
-        
-        <div className="analysis-section">
-          <h2>Analyze Your Writing</h2>
-          <p>
-            Paste your text below and Thoth will analyze it to identify themes, 
-            writing style, and compare it with renowned authors in your chosen language.
-          </p>
-          
-          <div className="language-toggle" style={{ justifyContent: "flex-start", marginBottom: "1rem" }}>
-            <button 
-              className={`language-btn ${language === "english" ? "active" : ""}`}
-              onClick={() => setLanguage("english")}
-            >
-              English
-            </button>
-            <button 
-              className={`language-btn ${language === "nepali" ? "active" : ""}`}
-              onClick={() => setLanguage("nepali")}
-            >
-              नेपाली
-            </button>
+    <div className="container" style={{ marginTop: 40, marginBottom: 60, maxWidth: "1200px" }}>
+      <div style={{ marginBottom: 32, textAlign: "center" }}>
+        <h1 style={{ marginBottom: 8 }}>Welcome back, {user?.name || "Writer"}! ✍️</h1>
+        <p className="small" style={{ fontSize: "16px", color: "var(--muted)" }}>
+          Transform your writing with AI-powered analysis and author-style rewriting
+        </p>
+      </div>
+
+      <div className="grid grid-2" style={{ gap: 24 }}>
+        <div className="panel fade-in">
+          <h2 style={{ marginBottom: 16, fontSize: "24px" }}>Input</h2>
+          <div style={{ marginBottom: 20 }}>
+            <label className="small" style={{ marginBottom: 10, display: "block" }}>
+              Your Text
+            </label>
+            <textarea
+              className="textarea"
+              placeholder="Paste your paragraph or text here to analyze and rewrite…"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              style={{ minHeight: "280px" }}
+            />
           </div>
-          
-          <textarea 
-            className="text-input"
-            placeholder={language === "english" 
-              ? "Enter your text here (minimum 100 words for best results)..." 
-              : "यहाँ आफ्नो पाठ प्रविष्ट गर्नुहोस् (उत्तम परिणामहरूको लागि कम्तिमा १०० शब्दहरू)..."}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          ></textarea>
-          
+
+          <div style={{ marginBottom: 20 }}>
+            <label className="small" style={{ marginBottom: 10, display: "block" }}>
+              Target Author Style
+            </label>
+            <select 
+              className="select" 
+              value={author} 
+              onChange={(e) => setAuthor(e.target.value)}
+              style={{ marginBottom: 16 }}
+            >
+              <option value="">Choose target author style</option>
+              <option>Franz Kafka</option>
+              <option>Virginia Woolf</option>
+              <option>George Orwell</option>
+            </select>
+          </div>
+
           <button 
-            className="analyze-btn" 
-            onClick={handleAnalyze}
-            disabled={isAnalyzing || !text.trim()}
+            className="btn primary" 
+            onClick={handleRewrite} 
+            disabled={loading || !text.trim() || !author}
+            style={{ width: "100%", padding: "14px 20px" }}
           >
-            {isAnalyzing ? "Analyzing..." : "Analyze Text"}
+            {loading ? "⏳ Analyzing & Rewriting…" : "🚀 Analyze & Rewrite"}
           </button>
-        </div>
-        
-        {results && (
-          <div className="analysis-section results-container">
-            <h2>Analysis Results</h2>
-            
-            <div className="results-grid">
-              <div className="result-card">
-                <h3>Author Match</h3>
-                <p>Your writing style is similar to:</p>
-                <p><strong>{language === "english" ? results.authorMatch.english : results.authorMatch.nepali}</strong></p>
-                <p>Similarity: {results.authorMatch.similarity}</p>
-              </div>
-              
-              <div className="result-card">
-                <h3>Themes Detected</h3>
-                <ul>
-                  {results.themes.map((theme, index) => (
-                    <li key={index}>{theme}</li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="result-card">
-                <h3>Sentiment Analysis</h3>
-                <p>{results.sentiment}</p>
-              </div>
-              
-              <div className="result-card">
-                <h3>Complexity</h3>
-                <p>Reading level: {results.complexity}</p>
-                <p>Unique words: {results.uniqueWords}</p>
-              </div>
-            </div>
+
+          <div className="small" style={{ marginTop: 16, padding: "12px", background: "var(--primary-light)", borderRadius: "8px", border: "1px solid var(--border)" }}>
+            <strong>Note:</strong> This is a demo placeholder. Integration with FastAPI <code>/rewrite</code> endpoint will provide real-time analysis and metrics.
           </div>
-        )}
+        </div>
+
+        <div className="panel fade-in">
+          <h2 style={{ marginBottom: 16, fontSize: "24px" }}>Output</h2>
+          <div className="output-area">
+            {out ? (
+              <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", lineHeight: "1.7" }}>
+                {out}
+              </div>
+            ) : (
+              <div style={{ color: "var(--muted)", fontStyle: "italic", textAlign: "center", paddingTop: "40px", fontFamily: "inherit" }}>
+                Your rewritten text and analysis will appear here…
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
-export default Home;

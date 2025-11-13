@@ -1,68 +1,57 @@
-import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import "./Pages.css";
 
-function Landing() {
-  const [language, setLanguage] = useState("english");
-
+export default function LandingPage() {
   return (
-    <div className="page-container">
-      <div className="landing-page">
-        <h1>Welcome to Thoth</h1>
-        
-        <div className="language-toggle">
-          <button 
-            className={`language-btn ${language === "english" ? "active" : ""}`}
-            onClick={() => setLanguage("english")}
-          >
-            English
-          </button>
-          <button 
-            className={`language-btn ${language === "nepali" ? "active" : ""}`}
-            onClick={() => setLanguage("nepali")}
-          >
-            नेपाली
-          </button>
-        </div>
-        
-        {language === "english" ? (
-          <p>
-            Thoth is your AI-powered bilingual psycho-literary assistant. 
-            Analyze writing styles, explore themes, and gain insights into your writing.
-            Whether you write in English or Nepali, Thoth helps you understand your unique voice
-            and compares your style with renowned authors.
+    <>
+      <section className="hero center">
+        <div className="container center" style={{ textAlign: "center", gap: 24, maxWidth: "900px" }}>
+          <h1>Thoth — Bilingual Psycho-Literary Assistant</h1>
+          <p className="lead">
+            Analyze writing, detect biases, and rewrite in the voice of renowned authors.
+            Start with English; Nepali support coming next. Clean UI with explainable insights.
           </p>
-        ) : (
-          <p>
-            थोथ तपाईंको एआई-संचालित द्विभाषी साहित्यिक सहायक हो।
-            लेखन शैलीहरू विश्लेषण गर्नुहोस्, विषयवस्तुहरू अन्वेषण गर्नुहोस्, र तपाईंको लेखनमा अन्तर्दृष्टि प्राप्त गर्नुहोस्।
-            तपाईं अंग्रेजी वा नेपालीमा लेख्नुहुन्छ, थोथले तपाईंको अद्वितीय आवाज बुझ्न र तपाईंको शैलीलाई प्रसिद्ध लेखकहरूसँग तुलना गर्न मद्दत गर्दछ।
+          <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link to="/login" className="btn primary">Get Started</Link>
+            <a href="#features" className="btn ghost">Learn More</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="container">
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <h2 style={{ marginBottom: 12 }}>Key Features</h2>
+          <p className="small" style={{ fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
+            Powerful tools to enhance your writing and understand your style
           </p>
-        )}
-        
-        <div className="features-grid">
-          <div className="feature-card">
-            <h3>Style Analysis</h3>
-            <p>Discover your writing style and how it compares to famous authors.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Theme Detection</h3>
-            <p>Uncover the main themes and motifs in your writing.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Bilingual Support</h3>
-            <p>Works with both English and Nepali text.</p>
-          </div>
         </div>
-        
-        <div>
-          <Link to="/login">
-            <button className="analyze-btn">Get Started</button>
-          </Link>
+        <div className="features">
+          {[
+            { 
+              title: "Author Tone", 
+              desc: "Rewriting guided by exemplar-based style sheets. Transform your writing to match the voice of renowned authors.",
+              icon: "✍️"
+            },
+            { 
+              title: "Bias & Strengths", 
+              desc: "Surface hedging, clarity, rhythm, and vocabulary richness. Get insights into your writing patterns.",
+              icon: "🔍"
+            },
+            { 
+              title: "Explainability", 
+              desc: "Show 'why': tone tags, anchors, and style stats. Understand the reasoning behind every suggestion.",
+              icon: "💡"
+            },
+          ].map((f, i) => (
+            <div key={i} className="panel feature fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div style={{ fontSize: "32px", marginBottom: "12px" }}>{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p className="small" style={{ margin: 0 }}>{f.desc}</p>
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
+      </section>
+
+      <footer>© {new Date().getFullYear()} Thoth. All rights reserved.</footer>
+    </>
   );
 }
-
-export default Landing;
