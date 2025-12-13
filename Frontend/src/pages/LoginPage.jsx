@@ -6,8 +6,8 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
   const { user } = useAuth();
   const nav = useNavigate();
-  const [tab, setTab] = useState("traditional");     // "traditional" | "google"
-  const [mode, setMode] = useState("signin");        // "signin" | "signup"
+  const [tab, setTab] = useState("traditional");   
+  const [mode, setMode] = useState("signin");      
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
