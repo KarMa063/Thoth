@@ -36,13 +36,13 @@ export function observeAuth(cb) {
   return onAuthStateChanged(auth, cb);
 }
 
-// ----- Email/Password (Traditional) -----
+// ----- Email/Password -----
 export async function emailSignUp({ name, email, password }) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   if (name) {
     await updateProfile(cred.user, { displayName: name });
   }
-  // Optional: store a user document in Firestore
+  //store a user document in Firestore
   try {
     const db = getFirestore(app);
     await setDoc(doc(db, "users", cred.user.uid), {

@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function logout() {
-    await googleLogout(); // also works when provider is password; it signs out the session
+    await googleLogout();
     setUser(null);
   }
 

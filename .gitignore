@@ -1,10 +1,38 @@
-# Ignore these folders entirely
-model/
-Data/
+# Trained models & embeddings
+Backend/model/
 
-# Always ignore OS/system files
+# FAISS + pickled corpus
+*.index
+*.faiss
+*.pkl
+
+# PYTHON
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+Backend/venv/
+.env
+
+#  FRONTEND
+node_modules/
+dist/
+build/
+
+#  OS / SYSTEM FILES
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Keep Frontend folder
+#  EDITORS / IDE
+.vscode/
+.idea/
+
+# ALLOW SOURCE CODE
 !Frontend/
+!Backend/
+!.gitignore
+!README.md
