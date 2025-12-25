@@ -8,3 +8,6 @@ accelerate==0.33.0
 numpy
 scikit-learn
 pydantic
+langdetect
+sentencepiece
+protobuf

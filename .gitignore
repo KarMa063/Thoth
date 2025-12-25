@@ -1,5 +1,8 @@
 # Trained models & embeddings
 Backend/model/
+model/
+chunks.pkl
+faiss.index
 
 # FAISS + pickled corpus
 *.index

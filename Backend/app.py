@@ -19,15 +19,21 @@ app.add_middleware(
 class RewriteRequest(BaseModel):
     text: str
     author: str
+    force_lang: str | None = None
+
 
 @app.get("/authors")
 def list_authors():
     return {"authors": get_authors()}
-
+    
 @app.post("/rewrite")
 def rewrite(req: RewriteRequest):
     try:
-        result = rag_author_rewrite(req.text, req.author)
+        print("Rewrite request received")
+        result = rag_author_rewrite(req.text, req.author, req.force_lang)
+        print("Rewrite completed")
         return result
     except Exception as e:
+        print("Rewrite error:", repr(e))
         raise HTTPException(status_code=500, detail=str(e))
+
