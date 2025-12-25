@@ -8,8 +8,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  GithubAuthProvider,
 } from "firebase/auth";
-// (Optional) If you want to save extra user data:
 import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const cfg = {
@@ -22,11 +22,16 @@ const cfg = {
 
 const app = initializeApp(cfg);
 export const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
+const githubProvider = new GithubAuthProvider();
 
 // ----- Google -----
 export async function googleLogin() {
-  const res = await signInWithPopup(auth, provider);
+  const res = await signInWithPopup(auth, googleProvider);
+  return res.user;
+}
+export async function githubLogin() {
+  const res = await signInWithPopup(auth, githubProvider);
   return res.user;
 }
 export async function googleLogout() {
