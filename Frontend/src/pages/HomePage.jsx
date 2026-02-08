@@ -5,13 +5,21 @@ const API_BASE = "http://127.0.0.1:8000";
 
 export default function HomePage() {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("rewrite");
+
+  // Shared state
   const [text, setText] = useState("");
-  const [author, setAuthor] = useState("");
-  const [authors, setAuthors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [out, setOut] = useState("");
+
+  // Rewrite / Continue state
+  const [author, setAuthor] = useState("");
+  const [authors, setAuthors] = useState([]);
   const [lang, setLang] = useState("");
 
+  // ---------------------------
+  // Load authors
+  // ---------------------------
   useEffect(() => {
     (async () => {
       try {
@@ -19,14 +27,21 @@ export default function HomePage() {
         const data = await res.json();
         setAuthors(data.authors || []);
       } catch (e) {
-        console.error(e);
+        console.error("Failed to fetch authors:", e);
         setAuthors([]);
       }
     })();
   }, []);
 
+  // ---------------------------
+  // Rewrite
+  // ---------------------------
   async function handleRewrite() {
-    if (!text.trim() || !author) return alert("Enter text and choose an author.");
+    if (!text.trim() || !author) {
+      alert("Enter text and choose an author.");
+      return;
+    }
+
     setLoading(true);
     setOut("");
     setLang("");
@@ -51,46 +66,215 @@ export default function HomePage() {
     }
   }
 
+  // ---------------------------
+  // Continue
+  // ---------------------------
+  async function handleContinue() {
+    if (!text.trim() || !author) {
+      alert("Enter text and choose an author.");
+      return;
+    }
+
+    setLoading(true);
+    setOut("");
+
+    try {
+      const res = await fetch(`${API_BASE}/continue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, author }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || "Continuation failed");
+
+      setOut(data.continuation || "");
+    } catch (err) {
+      console.error(err);
+      setOut(`❌ Continuation error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ---------------------------
+  // Analyze (embedding-based)
+  // ---------------------------
+  async function handleAnalyze() {
+    if (!text.trim()) {
+      alert("Enter text to analyze.");
+      return;
+    }
+
+    setLoading(true);
+    setOut("");
+
+    try {
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+      const data = await res.json();
+      console.log("ANALYZE RESPONSE:", data);
+
+      if (!res.ok) {
+        throw new Error(data?.detail || "Analysis failed");
+      }
+      // 🚨 Handle short / insufficient input
+      if (data.analysis_type === "insufficient-input") {
+        setOut(
+          `⚠️ Analysis unavailable\n\n` +
+          `${data.message}\n\n` +
+          `Details:\n` +
+          `• Tokens: ${data.details.token_count}\n` +
+          `• Sentences: ${data.details.sentence_count}\n` +
+          `• Minimum required: ${data.details.minimum_required.tokens} tokens, ` +
+          `${data.details.minimum_required.sentences} sentences`
+        );
+        return;
+      }
+
+
+      let report = `📊 Analysis Report\n\n`;
+
+      // Embedding signals
+      if (data.embedding_analysis) {
+        const sig = data.embedding_analysis.embedding_signals || {};
+        const stats = data.embedding_analysis.sentence_stats || {};
+
+        report += `🧠 Embedding-Based Signals:\n`;
+        report += ` • Emotional intensity: ${sig.emotional_intensity}\n`;
+        report += ` • Semantic drift: ${sig.semantic_drift}\n`;
+        report += ` • Assertiveness: ${sig.assertiveness}\n\n`;
+
+        report += `📐 Sentence Structure:\n`;
+        report += ` • Sentences analyzed: ${stats.num_sentences}\n`;
+        report += ` • Mean sentence similarity: ${stats.mean_sentence_similarity}\n\n`;
+      }
+
+      // Author alignment
+      if (data.author_alignment) {
+        const a = data.author_alignment;
+
+        report += `👤 Author Alignment:\n`;
+        report += ` • Closest author: ${a.closest_author}\n`;
+        report += ` • Deviation from author centroid: ${a.deviation_from_author}\n`;
+
+        if (a.similarities) {
+          const top = Object.entries(a.similarities)
+            .sort(([, x], [, y]) => y - x)
+            .slice(0, 3);
+
+          report += ` • Top matches: ${top
+            .map(([k, v]) => `${k} (${v})`)
+            .join(", ")}\n`;
+        }
+
+        report += `\n`;
+      }
+
+      // Notes / limitations
+      if (data.limitations) {
+        report += `⚠️ Notes & Limitations:\n`;
+        data.limitations.forEach((l) => {
+          report += ` • ${l}\n`;
+        });
+      }
+
+      setOut(report);
+    } catch (err) {
+      console.error(err);
+      setOut(`❌ Analysis error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ---------------------------
+  // UI helpers
+  // ---------------------------
+  const renderControls = () => {
+    if (activeTab === "analyze") {
+      return <h2>Text to Analyze</h2>;
+    }
+
+    return (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2>{activeTab === "continue" ? "Start Text" : "Input"}</h2>
+        <select
+          className="select"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          style={{ width: "auto", minWidth: "220px" }}
+        >
+          <option value="">Choose target author style</option>
+          {authors.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  };
+
+  const activeAction = () => {
+    if (activeTab === "rewrite") handleRewrite();
+    else if (activeTab === "continue") handleContinue();
+    else if (activeTab === "analyze") handleAnalyze();
+  };
+
+  const getButtonText = () => {
+    if (loading) return "Processing...";
+    if (activeTab === "rewrite") return "✨ Rewrite";
+    if (activeTab === "continue") return "📝 Continue";
+    return "🔍 Analyze";
+  };
+
+  // ---------------------------
+  // Render
+  // ---------------------------
   return (
     <div className="container" style={{ marginTop: 40, maxWidth: "1200px" }}>
       <header style={{ marginBottom: 40, textAlign: "center" }}>
-        <h1 className="fade-in">
+        <h1>
           Welcome back, <span className="gradient-text">{user?.name || "Writer"}</span>! ✍️
         </h1>
-        <p className="small fade-in" style={{ animationDelay: "0.1s" }}>
-          Author-tone rewriting using multilingual RAG (English + Nepali)
-        </p>
+        <p className="small">AI-powered writing assistant: Rewrite, Continue, and Analyze.</p>
       </header>
 
-      <div className="grid grid-2 fade-in" style={{ animationDelay: "0.2s" }}>
+      {/* Tabs */}
+      <div className="tab-group" style={{ maxWidth: "600px", margin: "0 auto 24px auto" }}>
+        {["rewrite", "continue", "analyze"].map((tab) => (
+          <button
+            key={tab}
+            className={`tab-btn ${activeTab === tab ? "active" : ""}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-2">
         <div className="panel" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2>Input</h2>
-            <select
-              className="select"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              style={{ width: "auto", minWidth: "220px" }}
-            >
-              <option value="">Choose target author style</option>
-              {authors.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </div>
+          {renderControls()}
 
           <textarea
             className="textarea"
-            placeholder="Paste your paragraph here (English or Nepali)…"
+            placeholder={
+              activeTab === "continue"
+                ? "Start your story here..."
+                : "Paste your text here (English or Nepali)…"
+            }
             value={text}
             onChange={(e) => setText(e.target.value)}
             style={{
               flex: 1,
               minHeight: 350,
               fontFamily: "monospace",
-              fontSize: "1.05rem",
               resize: "none",
             }}
           />
@@ -98,24 +282,20 @@ export default function HomePage() {
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <button
               className="btn primary"
-              onClick={handleRewrite}
-              disabled={loading || !text.trim() || !author}
-              style={{ padding: "12px 32px" }}
+              onClick={activeAction}
+              disabled={
+                loading ||
+                !text.trim() ||
+                ((activeTab === "rewrite" || activeTab === "continue") && !author)
+              }
             >
-              {loading ? "Rewriting..." : "✨ Rewrite"}
+              {getButtonText()}
             </button>
           </div>
         </div>
 
         <div className="panel" style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <h2 style={{ marginBottom: 16 }}>Output</h2>
-            {lang ? (
-              <span className="small" style={{ color: "var(--muted)" }}>
-                Detected: <strong>{lang.toUpperCase()}</strong>
-              </span>
-            ) : null}
-          </div>
+          <h2>{activeTab === "analyze" ? "Analysis Results" : "Output"}</h2>
 
           <div
             style={{
@@ -124,24 +304,20 @@ export default function HomePage() {
               borderRadius: 10,
               border: "1px solid var(--input-border)",
               padding: "1rem",
-              minHeight: 350,
-              fontFamily: "Georgia, serif",
-              fontSize: "1.15rem",
-              lineHeight: "1.8",
               whiteSpace: "pre-wrap",
               overflowY: "auto",
             }}
           >
-            {out ? (
-              <span className="fade-in">{out}</span>
-            ) : (
+            {out || (
               <span style={{ color: "var(--text-secondary)", fontStyle: "italic" }}>
-                The rewritten version will appear here...
+                {activeTab === "analyze"
+                  ? "Analysis results will appear here..."
+                  : "The result will appear here..."}
               </span>
             )}
           </div>
 
-          {out && !out.startsWith("❌") && (
+          {out && (
             <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
               <button className="btn ghost" onClick={() => navigator.clipboard.writeText(out)}>
                 📋 Copy

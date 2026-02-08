@@ -3,11 +3,12 @@ uvicorn[standard]
 torch
 sentence-transformers
 faiss-cpu
-transformers==4.44.2
-accelerate==0.33.0
+transformers>=4.45.0
+accelerate>=0.34.0
 numpy
 scikit-learn
 pydantic
 langdetect
 sentencepiece
 protobuf
+peft
