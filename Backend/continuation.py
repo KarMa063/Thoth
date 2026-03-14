@@ -33,7 +33,6 @@ from author_rag import (
     AUTHORS, AUTHOR_LANG, AUTHOR_CENTROIDS,
     embedder, retrieve_exemplars, style_samples,
     validate_lang_or_raise, style_scores_discriminative,
-    # Utils
     normalize_ws, clean_output, is_degenerate, dedupe_keep_order,
     ngram_overlap_frac, token_jaccard,
     added_digits_penalty, must_keep_ratio_en, is_questiony_junk,
@@ -42,9 +41,7 @@ from author_rag import (
 import numpy as np
 
 
-# =========================
-# LOAD GENERATOR (4-bit)
-# =========================
+# LOAD GENERATOR
 def load_llm_4bit(model_name: str):
     bnb_cfg = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -77,7 +74,6 @@ if USE_NE_PEFt:
     if tok_ne.pad_token is None and tok_ne.eos_token is not None:
         tok_ne.pad_token = tok_ne.eos_token
 
-    # base in 4-bit
     bnb_cfg = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
@@ -97,9 +93,7 @@ else:
     tok_ne, llm_ne = tok_en, llm_en
 
 
-# =========================
 # PROMPTS (Rewrite / Continue)
-# =========================
 def build_messages(task: str, user_text: str, author: str, style_lines: str, lang: str) -> List[Dict[str, str]]:
     """
     Returns chat messages for models that support chat templates.
@@ -184,9 +178,7 @@ def apply_chat_template(tok, messages: List[Dict[str, str]]) -> Dict[str, torch.
     return tok(text, return_tensors="pt", padding=True, truncation=True)
 
 
-# =========================
 # CANDIDATE GENERATION
-# =========================
 def gen_candidates(tok, model, messages: List[Dict[str, str]], max_new_tokens: int, n: int) -> List[str]:
     inputs = apply_chat_template(tok, messages).to(next(model.parameters()).device)
     input_ids = inputs["input_ids"]
@@ -218,9 +210,7 @@ def gen_candidates(tok, model, messages: List[Dict[str, str]], max_new_tokens: i
     return dedupe_keep_order(cands)
 
 
-# =========================
 # RERANK
-# =========================
 def rerank(user_text: str, candidates: List[str], exemplars: List[Dict[str, Any]], author: str) -> Tuple[str, List[Dict[str, Any]]]:
     if not candidates:
         return "", []
@@ -244,14 +234,12 @@ def rerank(user_text: str, candidates: List[str], exemplars: List[Dict[str, Any]
         if added_digits_penalty(u, t):
             continue
 
-        # Copy filters
         copy6 = ngram_overlap_frac(u, t, 6)
         jac = token_jaccard(u, t)
         if copy6 >= REJECT_COPY6_AT or jac >= REJECT_JAC_AT:
             continue
 
-        keep = must_keep_ratio_en(u, t)  # still good for digits/caps
-        # (Don't enforce too hard for Nepali, but this is mild)
+        keep = must_keep_ratio_en(u, t)
         if keep < 0.35:
             continue
 
@@ -276,7 +264,6 @@ def rerank(user_text: str, candidates: List[str], exemplars: List[Dict[str, Any]
             best_score = score
             best_text = t
 
-    # If reranking filtered everything, fall back to first candidate with minimal checks
     if not best_text and candidates:
         for fallback in candidates:
             fallback = clean_output(fallback)
@@ -289,9 +276,7 @@ def rerank(user_text: str, candidates: List[str], exemplars: List[Dict[str, Any]
     return best_text, scored
 
 
-# =========================
 # PUBLIC API
-# =========================
 def rag_author_generate(text: str, author: str, task: str = "rewrite") -> Dict[str, Any]:
     """
     task: "rewrite" or "continue"
@@ -312,7 +297,6 @@ def rag_author_generate(text: str, author: str, task: str = "rewrite") -> Dict[s
         messages = build_messages(task, text, author, style_lines, "en")
         cands = gen_candidates(tok_en, llm_en, messages, REWRITE_MAX_NEW_TOKENS if task == "rewrite" else CONT_MAX_NEW_TOKENS, NUM_CANDS)
     else:
-        # Nepali path (same LLM by default, but prompts enforce Nepali-only)
         messages = build_messages(task, text, author, style_lines, "ne")
         cands = gen_candidates(tok_ne, llm_ne, messages, REWRITE_MAX_NEW_TOKENS if task == "rewrite" else CONT_MAX_NEW_TOKENS, NUM_CANDS)
 

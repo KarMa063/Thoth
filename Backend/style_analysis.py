@@ -7,7 +7,6 @@ from langdetect import detect as detect_lang
 from author_rag import embedder, AUTHOR_CENTROIDS
 
 
-# Helpers
 def split_sentences(text: str) -> List[str]:
     sents = re.split(r"[.!?।]+", text)
     return [s.strip() for s in sents if len(s.strip()) > 5]
@@ -24,7 +23,6 @@ def _softmax(x: np.ndarray) -> np.ndarray:
 
 
 # Core embedding analysis
-
 def analyze_text_embeddings(text: str) -> Dict[str, Any]:
     sents = split_sentences(text)
 
@@ -82,7 +80,6 @@ def analyze_text_embeddings(text: str) -> Dict[str, Any]:
 
 
 # Author benchmarking
-
 def benchmark_author_alignment(text: str) -> Dict[str, Any]:
     emb = embedder.encode([text], normalize_embeddings=True)[0]
 
@@ -103,7 +100,6 @@ def benchmark_author_alignment(text: str) -> Dict[str, Any]:
 
 
 # Notes + limitations
-
 def dynamic_meta(
     text: str,
     emb_analysis: Dict[str, Any],
