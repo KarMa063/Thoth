@@ -18,9 +18,7 @@ from langdetect import detect as ld_detect
 from sentence_transformers import SentenceTransformer
 
 
-# =========================
 # CONFIG
-# =========================
 DEBUG_PRINT = True
 MODEL_DIR = "./model"
 CHUNKS_PKL = os.path.join(MODEL_DIR, "chunks.pkl")
@@ -33,11 +31,10 @@ EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 EN_GEN_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
 # Nepali generator options:
-# Option A (recommended): Use same EN model for Nepali too (if it handles Nepali reasonably),
-# but enforce Nepali-only output & Nepali-only input for Nepali authors.
+# Option A (recommended): Use same EN model for Nepali too (if it handles Nepali reasonably), but enforce Nepali-only output & Nepali-only input for Nepali authors.
 NE_GEN_MODEL = EN_GEN_MODEL
 
-# Option B (your existing Llama + PEFT adapter) - ONLY if you truly need it
+# Option B
 USE_NE_PEFt = False
 LLAMA_BASE_MODEL = "meta-llama/Llama-3.2-3B-Instruct"
 LLAMA_ADAPTER_MODEL = "MISHANM/Nepali_NLP_eng_to_nepali_Llama3.2_3B_instruction"
@@ -45,7 +42,7 @@ LLAMA_ADAPTER_MODEL = "MISHANM/Nepali_NLP_eng_to_nepali_Llama3.2_3B_instruction"
 # Retrieval / exemplars
 MAX_EXEMPLARS = 8
 
-# Generation caps (keep low for speed)
+# Generation caps
 REWRITE_MAX_NEW_TOKENS = 180
 CONT_MAX_NEW_TOKENS = 220
 
@@ -54,8 +51,8 @@ TOP_P = 0.90
 REP_PENALTY = 1.15
 NO_REPEAT_NGRAM = 4
 
-# Candidate count (keep low for speed)
-NUM_CANDS = 3  # Increase to 3 so reranker has choices
+# Candidate count
+NUM_CANDS = 3 
 
 # Rerank weights
 W_CONTENT = 0.30
@@ -69,9 +66,7 @@ MIN_LEN_RATIO = 0.30
 MAX_LEN_RATIO = 2.00
 
 
-# =========================
 # LANGUAGE DETECTION
-# =========================
 DEVANAGARI_RE = re.compile(r"[\u0900-\u097F]")
 
 def detect_lang(text: str) -> str:
@@ -86,9 +81,7 @@ def detect_lang(text: str) -> str:
         return "en"
 
 
-# =========================
 # UTILS
-# =========================
 def normalize_ws(t: str) -> str:
     return re.sub(r"\s+", " ", (t or "")).strip()
 
@@ -96,19 +89,14 @@ def clean_output(t: str) -> str:
     if not t:
         return ""
     t = t.strip().replace('"""', '').replace("'''", "")
-    # Remove markdown headers and artifacts (## , **, etc.)
     t = re.sub(r"#+\s*", "", t)
     t = re.sub(r"\*{2,}", "", t)
-    # Remove stray '## fragments
     t = re.sub(r"'\s*##\s*", "", t)
-    # Remove unicode replacement characters (often seen in bad token boundary decoding)
     t = t.replace("\ufffd", "")
-    # Remove common headings
     t = re.sub(r"^\s*(rewritten|rewrite|original|text|style|constraints).{0,80}:\s*", "", t, flags=re.IGNORECASE)
     t = re.sub(r"\s+", " ", t).strip()
     t = t.strip().strip('"').strip("'").strip()
 
-    # strip trailing analyses
     t = re.sub(r"(?i)(\n|\s)+(Note|Explanation|Translation|Meaning|Analysis):\s+.*$", "", t, flags=re.DOTALL)
     if re.fullmatch(r'["\'\.\s]+', t):
         return ""
@@ -119,7 +107,6 @@ def is_degenerate(t: str) -> bool:
     words = t.lower().split()
     if len(words) < 10:
         return False
-    # Check 3-gram repetition: if any 3-gram appears 4+ times, it's degenerate
     trigrams = [" ".join(words[i:i+3]) for i in range(len(words)-2)]
     from collections import Counter
     counts = Counter(trigrams)
@@ -197,9 +184,7 @@ def is_questiony_junk(cand: str) -> bool:
     return False
 
 
-# =========================
 # LOAD ARTIFACTS
-# =========================
 if not os.path.isfile(CHUNKS_PKL) or not os.path.isfile(FAISS_INDEX):
     raise RuntimeError("Missing artifacts: ./model/chunks.pkl or ./model/faiss.index")
 
@@ -212,16 +197,12 @@ faiss_index = faiss.read_index(FAISS_INDEX)
 print(f"[author_rag] Loaded chunks={len(corpus_chunks)} | Authors={len(AUTHORS)}")
 
 
-# =========================
 # LOAD EMBEDDER
-# =========================
 print("[author_rag] Loading embedder …")
 embedder = SentenceTransformer(EMBED_MODEL, device=DEVICE)
 
 
-# =========================
-# AUTHOR LANGUAGE MAP (AUTO)
-# =========================
+# AUTHOR LANGUAGE MAP
 def infer_author_langs(sample_per_author: int = 80) -> Dict[str, str]:
     """
     Infer author language from their chunks:
@@ -266,9 +247,7 @@ def validate_lang_or_raise(text: str, author: str) -> Tuple[str, str]:
     return src_lang, author_lang
 
 
-# =========================
-# CENTROIDS (FAST BUILD)
-# =========================
+# CENTROIDS
 def build_author_centroids_fast(sample_per_author: int = 240, batch_size: int = 64) -> Dict[str, np.ndarray]:
     samples = []
     sample_authors = []
@@ -305,9 +284,7 @@ AUTHOR_CENTROIDS = build_author_centroids_fast()
 print("[author_rag] Centroids ready:", len(AUTHOR_CENTROIDS))
 
 
-# =========================
 # RETRIEVAL + STYLE SAMPLES
-# =========================
 def retrieve_exemplars(query: str, author: str, k: int) -> List[Dict[str, Any]]:
     qv = embedder.encode([query], normalize_embeddings=True)
     _, ids = faiss_index.search(qv, min(k * 10, len(corpus_chunks)))
@@ -321,7 +298,6 @@ def retrieve_exemplars(query: str, author: str, k: int) -> List[Dict[str, Any]]:
         if len(hits) >= k:
             break
 
-    # fallback if none found
     if not hits:
         for row in corpus_chunks:
             if row.get("author", "").lower().strip() == al:
@@ -344,9 +320,7 @@ def style_samples(exemplars: List[Dict[str, Any]], max_lines: int = 3) -> str:
     return "\n".join(f"- {x}" for x in lines)
 
 
-# =========================
 # STYLE DISCRIM SCORE
-# =========================
 def style_scores_discriminative(author: str, cand_emb: np.ndarray) -> Tuple[float, float, float]:
     tgt = AUTHOR_CENTROIDS.get(author)
     if tgt is None:
