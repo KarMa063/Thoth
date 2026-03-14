@@ -7,10 +7,7 @@ from langdetect import detect as detect_lang
 from author_rag import embedder, AUTHOR_CENTROIDS
 
 
-# ======================================================
 # Helpers
-# ======================================================
-
 def split_sentences(text: str) -> List[str]:
     sents = re.split(r"[.!?।]+", text)
     return [s.strip() for s in sents if len(s.strip()) > 5]
@@ -26,9 +23,7 @@ def _softmax(x: np.ndarray) -> np.ndarray:
     return e / (np.sum(e) + 1e-12)
 
 
-# ======================================================
 # Core embedding analysis
-# ======================================================
 
 def analyze_text_embeddings(text: str) -> Dict[str, Any]:
     sents = split_sentences(text)
@@ -86,9 +81,7 @@ def analyze_text_embeddings(text: str) -> Dict[str, Any]:
     }
 
 
-# ======================================================
-# Author benchmarking (semantic, not stylistic)
-# ======================================================
+# Author benchmarking
 
 def benchmark_author_alignment(text: str) -> Dict[str, Any]:
     emb = embedder.encode([text], normalize_embeddings=True)[0]
@@ -109,9 +102,7 @@ def benchmark_author_alignment(text: str) -> Dict[str, Any]:
     }
 
 
-# ======================================================
-# Dynamic notes + limitations (NO if/else classifier)
-# ======================================================
+# Notes + limitations
 
 def dynamic_meta(
     text: str,
@@ -125,7 +116,7 @@ def dynamic_meta(
     n_tokens = len(re.findall(r"\b\w+\b", text, flags=re.UNICODE))
     n_sent = emb_analysis.get("sentence_stats", {}).get("num_sentences", 0) or 0
 
-    # Smooth reliability estimate (no hard thresholds)
+    # Smooth reliability estimate
     reliability = (
         (1.0 / (1.0 + math.exp(-(n_tokens - 140) / 60.0)))
         * (1.0 / (1.0 + math.exp(-(n_sent - 4) / 1.8)))
@@ -171,9 +162,7 @@ def dynamic_meta(
     }
 
 
-# ======================================================
 # Public API
-# ======================================================
 
 def analyze_text_style(text: str) -> Dict[str, Any]:
     text = (text or "").strip()
@@ -206,7 +195,7 @@ def analyze_text_style(text: str) -> Dict[str, Any]:
     emb_analysis = analyze_text_embeddings(text)
     author_profile = benchmark_author_alignment(text)
 
-    # Language-aware explanation (NOT suppression)
+    # Language-aware explanation
     if lang != "en":
         author_profile["note"] = (
             "Author alignment uses cross-lingual sentence embeddings. "

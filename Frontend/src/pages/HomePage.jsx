@@ -17,9 +17,7 @@ export default function HomePage() {
   const [authors, setAuthors] = useState([]);
   const [lang, setLang] = useState("");
 
-  // ---------------------------
   // Load authors
-  // ---------------------------
   useEffect(() => {
     (async () => {
       try {
@@ -33,9 +31,7 @@ export default function HomePage() {
     })();
   }, []);
 
-  // ---------------------------
   // Rewrite
-  // ---------------------------
   async function handleRewrite() {
     if (!text.trim() || !author) {
       alert("Enter text and choose an author.");
@@ -60,15 +56,13 @@ export default function HomePage() {
       setLang(data.language || "");
     } catch (err) {
       console.error(err);
-      setOut(`❌ Rewrite error: ${err.message}`);
+      setOut(`Rewrite error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   }
 
-  // ---------------------------
   // Continue
-  // ---------------------------
   async function handleContinue() {
     if (!text.trim() || !author) {
       alert("Enter text and choose an author.");
@@ -91,15 +85,13 @@ export default function HomePage() {
       setOut(data.continuation || "");
     } catch (err) {
       console.error(err);
-      setOut(`❌ Continuation error: ${err.message}`);
+      setOut(`Continuation error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   }
 
-  // ---------------------------
-  // Analyze (embedding-based)
-  // ---------------------------
+  // Analyze
   async function handleAnalyze() {
     if (!text.trim()) {
       alert("Enter text to analyze.");
@@ -122,10 +114,10 @@ export default function HomePage() {
       if (!res.ok) {
         throw new Error(data?.detail || "Analysis failed");
       }
-      // 🚨 Handle short / insufficient input
+      //Handle short / insufficient input
       if (data.analysis_type === "insufficient-input") {
         setOut(
-          `⚠️ Analysis unavailable\n\n` +
+          `Analysis unavailable\n\n` +
           `${data.message}\n\n` +
           `Details:\n` +
           `• Tokens: ${data.details.token_count}\n` +
@@ -137,19 +129,24 @@ export default function HomePage() {
       }
 
 
-      let report = `📊 Analysis Report\n\n`;
+      let report = `Analysis Report\n\n`;
 
       // Embedding signals
       if (data.embedding_analysis) {
         const sig = data.embedding_analysis.embedding_signals || {};
         const stats = data.embedding_analysis.sentence_stats || {};
 
-        report += `🧠 Embedding-Based Signals:\n`;
+        report += `Embedding-Based Signals:\n`;
         report += ` • Emotional intensity: ${sig.emotional_intensity}\n`;
         report += ` • Semantic drift: ${sig.semantic_drift}\n`;
         report += ` • Assertiveness: ${sig.assertiveness}\n\n`;
 
-        report += `📐 Sentence Structure:\n`;
+        report += `Signal Guide:\n`;
+        report += ` • Emotional Intensity: Higher values mean evocative language.\n`;
+        report += ` • Semantic Drift: Higher values mean ideas shift rapidly (free-flowing).\n`;
+        report += ` • Assertiveness: Higher values indicate confident, direct statements.\n\n`;
+
+        report += `Sentence Structure:\n`;
         report += ` • Sentences analyzed: ${stats.num_sentences}\n`;
         report += ` • Mean sentence similarity: ${stats.mean_sentence_similarity}\n\n`;
       }
@@ -158,7 +155,7 @@ export default function HomePage() {
       if (data.author_alignment) {
         const a = data.author_alignment;
 
-        report += `👤 Author Alignment:\n`;
+        report += `Author Alignment:\n`;
         report += ` • Closest author: ${a.closest_author}\n`;
         report += ` • Deviation from author centroid: ${a.deviation_from_author}\n`;
 
@@ -177,7 +174,7 @@ export default function HomePage() {
 
       // Notes / limitations
       if (data.limitations) {
-        report += `⚠️ Notes & Limitations:\n`;
+        report += `Notes & Limitations:\n`;
         data.limitations.forEach((l) => {
           report += ` • ${l}\n`;
         });
@@ -186,15 +183,12 @@ export default function HomePage() {
       setOut(report);
     } catch (err) {
       console.error(err);
-      setOut(`❌ Analysis error: ${err.message}`);
+      setOut(`Analysis error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   }
 
-  // ---------------------------
-  // UI helpers
-  // ---------------------------
   const renderControls = () => {
     if (activeTab === "analyze") {
       return <h2>Text to Analyze</h2>;
@@ -228,19 +222,17 @@ export default function HomePage() {
 
   const getButtonText = () => {
     if (loading) return "Processing...";
-    if (activeTab === "rewrite") return "✨ Rewrite";
-    if (activeTab === "continue") return "📝 Continue";
+    if (activeTab === "rewrite") return "Rewrite";
+    if (activeTab === "continue") return "Continue";
     return "🔍 Analyze";
   };
 
-  // ---------------------------
   // Render
-  // ---------------------------
   return (
     <div className="container" style={{ marginTop: 40, maxWidth: "1200px" }}>
       <header style={{ marginBottom: 40, textAlign: "center" }}>
         <h1>
-          Welcome back, <span className="gradient-text">{user?.name || "Writer"}</span>! ✍️
+          Welcome back, <span className="gradient-text">{user?.name || "Writer"}</span>!
         </h1>
         <p className="small">AI-powered writing assistant: Rewrite, Continue, and Analyze.</p>
       </header>

@@ -1,10 +1,15 @@
+# NOTE: Install PyTorch with CUDA support FIRST, before installing the rest:
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# Then install the remaining dependencies:
+#   pip install -r requirements.txt
+
 fastapi
 uvicorn[standard]
-torch
 sentence-transformers
 faiss-cpu
 transformers>=4.45.0
 accelerate>=0.34.0
+bitsandbytes
 numpy
 scikit-learn
 pydantic
