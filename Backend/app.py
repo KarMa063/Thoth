@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from author_rag import rag_author_rewrite, get_authors
-from continuation import rag_author_continue
+from author_rag import get_authors
+from continuation import rag_author_rewrite, rag_author_continue
 from style_analysis import analyze_text_style
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,7 +19,6 @@ app.add_middleware(
 class RewriteRequest(BaseModel):
     text: str
     author: str
-    force_lang: str | None = None
 
 class ContinueRequest(BaseModel):
     text: str
@@ -40,8 +39,10 @@ def list_authors():
 def rewrite(req: RewriteRequest):
     try:
         print("Rewrite request received", flush=True)
-        result = rag_author_rewrite(req.text, req.author, req.force_lang)
+        result = rag_author_rewrite(req.text, req.author)
         print("Rewrite completed", flush=True)
+        # Frontend expects 'rewritten' key
+        result["rewritten"] = result.get("output", "")
         return result
     except Exception as e:
         print("Rewrite error:", repr(e), flush=True)
@@ -51,9 +52,11 @@ def rewrite(req: RewriteRequest):
 def continue_text(req: ContinueRequest):
     try:
         print(f"Continuation request received for author: {req.author}", flush=True)
-        continuation = rag_author_continue(req.text, req.author)
+        result = rag_author_continue(req.text, req.author)
+        # result is a dict with 'output' key; frontend expects 'continuation' as a string
+        continuation_text = result.get("output", "") if isinstance(result, dict) else str(result)
         print("Continuation completed", flush=True)
-        return {"continuation": continuation, "author": req.author}
+        return {"continuation": continuation_text, "author": req.author}
     except Exception as e:
         print("Continuation error:", repr(e), flush=True)
         raise HTTPException(status_code=500, detail=str(e))
