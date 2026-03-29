@@ -14,16 +14,10 @@ from transformers import (
     BitsAndBytesConfig,
 )
 
-try:
-    from peft import PeftModel
-except Exception:
-    PeftModel = None
-
 from author_rag import (
     # Config
     DEBUG_PRINT, DEVICE,
-    EN_GEN_MODEL, NE_GEN_MODEL, USE_NE_PEFt,
-    LLAMA_BASE_MODEL, LLAMA_ADAPTER_MODEL,
+    EN_GEN_MODEL, NE_GEN_MODEL,
     MAX_EXEMPLARS, REWRITE_MAX_NEW_TOKENS, CONT_MAX_NEW_TOKENS,
     TEMPERATURE, TOP_P, REP_PENALTY, NO_REPEAT_NGRAM, NUM_CANDS,
     W_CONTENT, W_STYLE_DISCRIM, W_NOVELTY,
@@ -33,15 +27,16 @@ from author_rag import (
     AUTHORS, AUTHOR_LANG, AUTHOR_CENTROIDS,
     embedder, retrieve_exemplars, style_samples,
     validate_lang_or_raise, style_scores_discriminative,
+    # Utils
     normalize_ws, clean_output, is_degenerate, dedupe_keep_order,
-    ngram_overlap_frac, token_jaccard,
+    ngram_overlap_frac, token_jaccard, strip_non_devanagari,
     added_digits_penalty, must_keep_ratio_en, is_questiony_junk,
 )
 
 import numpy as np
 
 
-# LOAD GENERATOR
+# LOAD GENERATORS
 def load_llm_4bit(model_name: str):
     bnb_cfg = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -61,35 +56,16 @@ def load_llm_4bit(model_name: str):
     ).eval()
     return tok, model
 
-print("[continuation] Loading EN generator (4-bit) …")
+# English: Qwen 3B
+print("[continuation] Loading EN generator (Qwen 3B, 4-bit) …")
 tok_en, llm_en = load_llm_4bit(EN_GEN_MODEL)
 
-# Nepali model choice
-tok_ne, llm_ne = None, None
-if USE_NE_PEFt:
-    if PeftModel is None:
-        raise RuntimeError("peft not installed but USE_NE_PEFt=True")
-    print("[continuation] Loading Nepali Llama base + PEFT adapter (4-bit base) …")
-    tok_ne = AutoTokenizer.from_pretrained(LLAMA_BASE_MODEL, use_fast=True)
-    if tok_ne.pad_token is None and tok_ne.eos_token is not None:
-        tok_ne.pad_token = tok_ne.eos_token
-
-    bnb_cfg = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.float16,
-    )
-    base = AutoModelForCausalLM.from_pretrained(
-        LLAMA_BASE_MODEL,
-        quantization_config=bnb_cfg,
-        device_map="auto",
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-    ).eval()
-    llm_ne = PeftModel.from_pretrained(base, LLAMA_ADAPTER_MODEL).eval()
+# Nepali: Gemma 3 1B text-only
+if NE_GEN_MODEL != EN_GEN_MODEL:
+    print(f"[continuation] Loading NE generator (Gemma 3 1B, 4-bit) …")
+    tok_ne, llm_ne = load_llm_4bit(NE_GEN_MODEL)
 else:
-    print("[continuation] Using same generator for Nepali (fast path) …")
+    print("[continuation] Using same model for Nepali …")
     tok_ne, llm_ne = tok_en, llm_en
 
 
@@ -299,6 +275,9 @@ def rag_author_generate(text: str, author: str, task: str = "rewrite") -> Dict[s
     else:
         messages = build_messages(task, text, author, style_lines, "ne")
         cands = gen_candidates(tok_ne, llm_ne, messages, REWRITE_MAX_NEW_TOKENS if task == "rewrite" else CONT_MAX_NEW_TOKENS, NUM_CANDS)
+        # Strip non-Devanagari Indic scripts (Gujarati, Bengali, etc.)
+        cands = [strip_non_devanagari(c) for c in cands]
+        cands = [c for c in cands if c.strip()]
 
     chosen, scored = rerank(text, cands, exemplars, author)
 
