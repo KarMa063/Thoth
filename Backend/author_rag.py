@@ -30,14 +30,8 @@ EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 
 EN_GEN_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
-# Nepali generator options:
-# Option A (recommended): Use same EN model for Nepali too (if it handles Nepali reasonably), but enforce Nepali-only output & Nepali-only input for Nepali authors.
-NE_GEN_MODEL = EN_GEN_MODEL
-
-# Option B
-USE_NE_PEFt = False
-LLAMA_BASE_MODEL = "meta-llama/Llama-3.2-3B-Instruct"
-LLAMA_ADAPTER_MODEL = "MISHANM/Nepali_NLP_eng_to_nepali_Llama3.2_3B_instruction"
+# Gemma 3 1B (text-only) for Nepali
+NE_GEN_MODEL = "google/gemma-3-1b-it"
 
 # Retrieval / exemplars
 MAX_EXEMPLARS = 8
@@ -123,6 +117,17 @@ def dedupe_keep_order(items: List[str]) -> List[str]:
         seen.add(k)
         out.append(x)
     return out
+
+# Regex: keep only ASCII + Devanagari (U+0900-U+097F) + common punctuation
+_ALLOWED_NE_RE = re.compile(r"[^\u0000-\u007F\u0900-\u097F]")
+
+def strip_non_devanagari(t: str) -> str:
+    """Remove any non-Devanagari Indic scripts (Gujarati, Bengali, etc.) from text.
+    Keeps ASCII + Devanagari only — exactly what Nepali needs."""
+    t = _ALLOWED_NE_RE.sub("", t)
+    # Collapse leftover whitespace
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
 
 def ngram_overlap_frac(a: str, b: str, n: int = 6) -> float:
     aw = a.lower().split()
@@ -337,9 +342,6 @@ def style_scores_discriminative(author: str, cand_emb: np.ndarray) -> Tuple[floa
     style_discrim = style_t - best_other
     return style_t, best_other, style_discrim
 
-
-# =========================
 # PUBLIC API
-# =========================
 def get_authors() -> List[str]:
     return AUTHORS
