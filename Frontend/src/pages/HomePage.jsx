@@ -136,19 +136,19 @@ export default function HomePage() {
         const sig = data.embedding_analysis.embedding_signals || {};
         const stats = data.embedding_analysis.sentence_stats || {};
 
-        report += `Embedding-Based Signals:\n`;
-        report += ` • Emotional intensity: ${sig.emotional_intensity}\n`;
-        report += ` • Semantic drift: ${sig.semantic_drift}\n`;
-        report += ` • Assertiveness: ${sig.assertiveness}\n\n`;
+        report += `Writing Style Highlights:\n`;
+        report += ` • Emotion Level: ${sig.emotional_intensity}\n`;
+        report += ` • Topic Changes: ${sig.semantic_drift}\n`;
+        report += ` • Confidence Level: ${sig.assertiveness}\n\n`;
 
-        report += `Signal Guide:\n`;
-        report += ` • Emotional Intensity: Higher values mean evocative language.\n`;
-        report += ` • Semantic Drift: Higher values mean ideas shift rapidly (free-flowing).\n`;
-        report += ` • Assertiveness: Higher values indicate confident, direct statements.\n\n`;
+        report += `What This Means:\n`;
+        report += ` • Emotion Level: Higher values mean the text uses stronger emotional words.\n`;
+        report += ` • Topic Changes: Higher values mean the ideas flow freely from one to another.\n`;
+        report += ` • Confidence Level: Higher values mean the statements are direct and sure.\n\n`;
 
-        report += `Sentence Structure:\n`;
-        report += ` • Sentences analyzed: ${stats.num_sentences}\n`;
-        report += ` • Mean sentence similarity: ${stats.mean_sentence_similarity}\n\n`;
+        report += `Sentence Details:\n`;
+        report += ` • Total Sentences: ${stats.num_sentences}\n`;
+        report += ` • Average Similarity: ${stats.mean_sentence_similarity}\n\n`;
       }
 
       // Author alignment
