@@ -1,8 +1,7 @@
 """
-author_rag.py — RAG Infrastructure
+RAG Infrastructure
 
-Handles: artifact loading, embedder, author language detection,
-centroids, retrieval, style scoring, and shared utilities.
+Handles: artifact loading, embedder, author language detection, centroids, retrieval, style scoring, and shared utilities.
 """
 
 import os, re, pickle
@@ -30,8 +29,13 @@ EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 
 EN_GEN_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
-# Gemma 3 1B (text-only) for Nepali
-NE_GEN_MODEL = "google/gemma-3-1b-it"
+# Gemma 3 4B for Nepali
+NE_GEN_MODEL = "google/gemma-3-4b-it"
+
+#Removed models
+# USE_NE_PEFt = False
+# LLAMA_BASE_MODEL = "meta-llama/Llama-3.2-3B-Instruct"
+# LLAMA_ADAPTER_MODEL = "MISHANM/Nepali_NLP_eng_to_nepali_Llama3.2_3B_instruction"
 
 # Retrieval / exemplars
 MAX_EXEMPLARS = 8
@@ -46,7 +50,7 @@ REP_PENALTY = 1.15
 NO_REPEAT_NGRAM = 4
 
 # Candidate count
-NUM_CANDS = 3 
+NUM_CANDS = 2
 
 # Rerank weights
 W_CONTENT = 0.30
@@ -90,6 +94,9 @@ def clean_output(t: str) -> str:
     t = re.sub(r"^\s*(rewritten|rewrite|original|text|style|constraints).{0,80}:\s*", "", t, flags=re.IGNORECASE)
     t = re.sub(r"\s+", " ", t).strip()
     t = t.strip().strip('"').strip("'").strip()
+    t = re.sub(r"([a-zA-Z])([A-Z])", r"\1 \2", t)
+    t = re.sub(r"([a-z])([A-Z])", r"\1 \2", t)  
+    t = re.sub(r"([.,!?;:])([a-zA-Z])", r"\1 \2", t)
 
     t = re.sub(r"(?i)(\n|\s)+(Note|Explanation|Translation|Meaning|Analysis):\s+.*$", "", t, flags=re.DOTALL)
     if re.fullmatch(r'["\'\.\s]+', t):

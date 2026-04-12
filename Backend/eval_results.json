@@ -1,0 +1,106 @@
+{
+  "english": [
+    {
+      "output": "Old man sat aloneby seewatcheswavescrashagainshore",
+      "rewritten": "Old man sat aloneby seewatcheswavescrashagainshore",
+      "similarity": null,
+      "latency": 18.59,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/TheSunAlsoRises.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt"
+      ],
+      "input": "The old man sat alone by the sea, watching the waves crash against the shore."
+    },
+    {
+      "output": "She walked throughthe crowdedmarket,feelinginvisibleamongthenoise.",
+      "rewritten": "She walked throughthe crowdedmarket,feelinginvisibleamongthenoise.",
+      "similarity": null,
+      "latency": 15.77,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/TheSunAlsoRises.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt"
+      ],
+      "input": "She walked through the crowded market, feeling invisible among the noise."
+    },
+    {
+      "output": "The war hadendedbutnothingfeelsfinished,nothingfeelsclean.",
+      "rewritten": "The war hadendedbutnothingfeelsfinished,nothingfeelsclean.",
+      "similarity": null,
+      "latency": 16.3,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/TheSunAlsoRises.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt"
+      ],
+      "input": "The war had ended but nothing felt finished, nothing felt clean."
+    },
+    {
+      "output": "He opened the note slowly, already expecting its contents.",
+      "rewritten": "He opened the note slowly, already expecting its contents.",
+      "similarity": null,
+      "latency": 8.93,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/TheSunAlsoRises.txt"
+      ],
+      "input": "He opened the letter slowly, already knowing what it would say."
+    },
+    {
+      "output": "At night, the city breathed differently than during the day.",
+      "rewritten": "At night, the city breathed differently than during the day.",
+      "similarity": null,
+      "latency": 11.25,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/AFarewellToArms.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/Hemingway/TheSunAlsoRises.txt"
+      ],
+      "input": "The city at night was a different creature, breathing differently than in daylight."
+    }
+  ],
+  "nepali": [
+    {
+      "output": "एक वृद्ध पुरुष एक्लै बसी आकाशतर्फ नियारेका थिए।",
+      "rewritten": "एक वृद्ध पुरुष एक्लै बसी आकाशतर्फ नियारेका थिए।",
+      "similarity": null,
+      "latency": 36.37,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/BabuAamaRaChhora.txt"
+      ],
+      "input": "बूढो मान्छे एक्लै बसेर आकाशतर्फ हेर्दै थियो।"
+    },
+    {
+      "output": "त्यतिवेला उनले बजारमै चहलल्या, तर आफुलाई एकदमै एक्Alone महसुस भए।",
+      "rewritten": "त्यतिवेला उनले बजारमै चहलल्या, तर आफुलाई एकदमै एक्Alone महसुस भए।",
+      "similarity": null,
+      "latency": 66.72,
+      "status": "success",
+      "exemplars_used": [
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/TeenGhumti.txt",
+        "/content/drive/MyDrive/ColabNotebooks/corpus/BPKoirala/TeenGhumti.txt"
+      ],
+      "input": "उनले बजारमा हिँड्दा आफूलाई एक्लो महसुस गरे।"
+    }
+  ]
+}
