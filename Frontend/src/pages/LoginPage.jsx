@@ -153,7 +153,7 @@ export default function LoginPage() {
               disabled={busy}
               style={{ width: "100%", justifyContent: "center", background: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-primary)" }}
             >
-              <span style={{ fontSize: "1.2rem" }}>🔮</span> Continue with Google
+              <span style={{ fontSize: "1.2rem" }}></span> Continue with Google
             </button>
 
             <button
@@ -162,7 +162,7 @@ export default function LoginPage() {
               disabled={busy}
               style={{ width: "100%", justifyContent: "center", background: "#24292e", color: "white", border: "none" }}
             >
-              <span style={{ fontSize: "1.2rem" }}>🐙</span> Continue with GitHub
+              <span style={{ fontSize: "1.2rem" }}></span> Continue with GitHub
             </button>
 
             <p className="small" style={{ textAlign: "center", marginTop: 16, lineHeight: "1.6" }}>
