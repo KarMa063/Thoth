@@ -1,8 +1,7 @@
 """
-continuation.py — Text Generation (Rewrite & Continue)
+Text Generation (Rewrite & Continue)
 
-Handles: LLM loading, prompt building, candidate generation,
-reranking, and the public API for rewrite/continue.
+Handles: LLM loading, prompt building, candidate generation, reranking, and the public API for rewrite/continue.
 """
 
 import torch
@@ -37,12 +36,12 @@ import numpy as np
 
 
 # LOAD GENERATORS
-def load_llm_4bit(model_name: str):
+def load_llm_4bit(model_name: str, compute_dtype=torch.float16):
     bnb_cfg = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.float16,
+        bnb_4bit_compute_dtype=compute_dtype,
     )
     tok = AutoTokenizer.from_pretrained(model_name, use_fast=True)
     if tok.pad_token is None and tok.eos_token is not None:
@@ -52,7 +51,7 @@ def load_llm_4bit(model_name: str):
         model_name,
         quantization_config=bnb_cfg,
         device_map="auto",
-        torch_dtype=torch.float16,
+        dtype=compute_dtype,
     ).eval()
     return tok, model
 
@@ -60,10 +59,10 @@ def load_llm_4bit(model_name: str):
 print("[continuation] Loading EN generator (Qwen 3B, 4-bit) …")
 tok_en, llm_en = load_llm_4bit(EN_GEN_MODEL)
 
-# Nepali: Gemma 3 1B text-only
+# Nepali: Gemma 3 4B text-only
 if NE_GEN_MODEL != EN_GEN_MODEL:
-    print(f"[continuation] Loading NE generator (Gemma 3 1B, 4-bit) …")
-    tok_ne, llm_ne = load_llm_4bit(NE_GEN_MODEL)
+    print(f"[continuation] Loading NE generator (Gemma 3 4B, 4-bit) …")
+    tok_ne, llm_ne = load_llm_4bit(NE_GEN_MODEL, compute_dtype=torch.bfloat16)
 else:
     print("[continuation] Using same model for Nepali …")
     tok_ne, llm_ne = tok_en, llm_en
@@ -161,6 +160,8 @@ def gen_candidates(tok, model, messages: List[Dict[str, str]], max_new_tokens: i
     attention_mask = inputs["attention_mask"]
     inp_len = input_ids.shape[-1]
 
+    pad_id = tok.pad_token_id if tok.pad_token_id is not None else tok.eos_token_id
+
     with torch.inference_mode():
         outs = model.generate(
             input_ids=input_ids,
@@ -172,7 +173,7 @@ def gen_candidates(tok, model, messages: List[Dict[str, str]], max_new_tokens: i
             repetition_penalty=REP_PENALTY,
             no_repeat_ngram_size=NO_REPEAT_NGRAM,
             num_return_sequences=n,
-            pad_token_id=tok.eos_token_id,
+            pad_token_id=pad_id,
             eos_token_id=tok.eos_token_id,
         )
 

@@ -7,7 +7,7 @@ fastapi
 uvicorn[standard]
 sentence-transformers
 faiss-cpu
-transformers>=4.45.0
+transformers>=4.50.0
 accelerate>=0.34.0
 bitsandbytes
 numpy
@@ -16,4 +16,3 @@ pydantic
 langdetect
 sentencepiece
 protobuf
-peft
