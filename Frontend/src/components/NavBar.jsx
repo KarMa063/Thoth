@@ -13,48 +13,37 @@ export default function NavBar() {
   }
 
   return (
-    <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0,
-      height: "64px",
-      background: "var(--card-bg)",
-      backdropFilter: "blur(12px)",
-      borderBottom: "1px solid var(--card-border)",
-      zIndex: 100,
-      display: "flex",
-      alignItems: "center"
-    }}>
-      <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-        <Link to="/" style={{ fontSize: "1.5rem", fontWeight: "bold", textDecoration: "none", color: "var(--accent-color)" }}>
+    <nav className="nav-bar">
+      <div className="nav-inner">
+        <Link to="/" className="nav-brand">
           Thoth
         </Link>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+
+        <div className="nav-actions">
           <button
-            className="btn ghost"
+            className="btn btn-icon ghost theme-toggle"
             onClick={toggle}
             aria-label="Toggle theme"
-            style={{
-              padding: "8px",
-              borderRadius: "50%",
-              width: "40px",
-              height: "40px",
-              minWidth: "40px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.2rem",
-              border: "1px solid var(--card-border)",
-              color: "var(--accent-color)"
-            }}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            type="button"
           >
-            {theme === "dark" ? "☀️" : "🌙"}
+            {theme === "dark" ? "L" : "D"}
           </button>
 
-          <Link to="/home" className="btn ghost" style={{ padding: "8px 16px", color: "var(--accent-color)" }}>Home</Link>
+          {user && (
+            <Link to="/home" className="btn ghost">
+              Workspace
+            </Link>
+          )}
 
           {user ? (
-            <button onClick={handleLogout} className="btn ghost" style={{ padding: "8px 16px", color: "var(--accent-color)" }}>Logout</button>
+            <button onClick={handleLogout} className="btn ghost" type="button">
+              Sign Out
+            </button>
           ) : (
-            <Link to="/login" className="btn primary" style={{ padding: "8px 20px" }}>Login</Link>
+            <Link to="/login" className="btn primary">
+              Sign In
+            </Link>
           )}
         </div>
       </div>
