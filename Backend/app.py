@@ -1,12 +1,43 @@
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from author_rag import get_authors
-from continuation import rag_author_rewrite, rag_author_continue
-from style_analysis import analyze_text_style
-
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Thoth Author Tone Backend")
+from config import Config
+from rag import ArtifactStore, EmbedderService, AuthorRegistry, RetrieverService
+from generation import LLMLoader, PromptBuilder, Reranker, GenerationService
+from analysis import StyleAnalyser
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    cfg = Config()
+    
+    # 1. RAG Components
+    store = ArtifactStore(cfg)
+    store.load()
+    
+    emb = EmbedderService(cfg)
+    emb.load()
+    
+    registry = AuthorRegistry(cfg, store, emb)
+    registry.build()
+    
+    retriever = RetrieverService(cfg, store, emb)
+    
+    # 2. Generation Components
+    loader = LLMLoader(cfg)
+    loader.load()
+    
+    prompt_builder = PromptBuilder()
+    reranker = Reranker(cfg, emb, registry)
+    
+    app.state.gen_service = GenerationService(cfg, registry, retriever, loader, prompt_builder, reranker)
+    app.state.analyser = StyleAnalyser(emb, registry)
+    app.state.registry = registry
+    
+    yield
+
+app = FastAPI(title="Thoth Author Tone Backend", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,15 +62,17 @@ class AnalyzeRequest(BaseModel):
 
 
 @app.get("/authors")
-def list_authors():
+def list_authors(request: Request):
     print("Authors request received", flush=True)
-    return {"authors": get_authors()}
+    registry: AuthorRegistry = request.app.state.registry
+    return {"authors": registry.get_authors()}
     
 @app.post("/rewrite")
-def rewrite(req: RewriteRequest):
+def rewrite(req: RewriteRequest, request: Request):
     try:
         print("Rewrite request received", flush=True)
-        result = rag_author_rewrite(req.text, req.author)
+        gen_service: GenerationService = request.app.state.gen_service
+        result = gen_service.rewrite(req.text, req.author)
         print("Rewrite completed", flush=True)
         # Frontend expects 'rewritten' key
         result["rewritten"] = result.get("output", "")
@@ -49,10 +82,11 @@ def rewrite(req: RewriteRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/continue")
-def continue_text(req: ContinueRequest):
+def continue_text(req: ContinueRequest, request: Request):
     try:
         print(f"Continuation request received for author: {req.author}", flush=True)
-        result = rag_author_continue(req.text, req.author)
+        gen_service: GenerationService = request.app.state.gen_service
+        result = gen_service.continue_text(req.text, req.author)
         # result is a dict with 'output' key; frontend expects 'continuation' as a string
         continuation_text = result.get("output", "") if isinstance(result, dict) else str(result)
         print("Continuation completed", flush=True)
@@ -62,14 +96,13 @@ def continue_text(req: ContinueRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze")
-def analyze_text(req: AnalyzeRequest):
+def analyze_text(req: AnalyzeRequest, request: Request):
     try:
         print("Analysis request received", flush=True)
-        result = analyze_text_style(req.text)
+        analyser: StyleAnalyser = request.app.state.analyser
+        result = analyser.analyse(req.text)
         print("Analysis completed", flush=True)
         return result
     except Exception as e:
         print("Analysis error:", repr(e), flush=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-

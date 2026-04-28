@@ -1,68 +1,155 @@
 import { Link } from "react-router-dom";
 
+const features = [
+  {
+    icon: "R",
+    title: "Author Style Rewriting",
+    desc: "Rewrite English or Nepali prose against retrieved author examples instead of relying on a generic prompt alone.",
+  },
+  {
+    icon: "C",
+    title: "Style-Aware Continuation",
+    desc: "Continue a passage while preserving the selected author's rhythm, vocabulary, and narrative flow.",
+  },
+  {
+    icon: "A",
+    title: "Explainable Style Analysis",
+    desc: "Report measurable style signals such as semantic drift, emotional intensity, and author alignment.",
+  },
+];
+
+const stats = [
+  { value: "12", label: "Literary Authors" },
+  { value: "21K+", label: "Corpus Chunks" },
+  { value: "2", label: "Languages" },
+  { value: "4", label: "Core Modules" },
+];
+
+const pipeline = [
+  {
+    step: "01",
+    title: "Submit text",
+    desc: "Paste writing in English or Nepali and choose the task: rewrite, continue, or analyze.",
+  },
+  {
+    step: "02",
+    title: "Retrieve author evidence",
+    desc: "The RAG layer searches author corpus chunks for relevant style examples.",
+  },
+  {
+    step: "03",
+    title: "Generate grounded output",
+    desc: "The model uses the retrieved examples to produce text aligned with the selected author.",
+  },
+  {
+    step: "04",
+    title: "Inspect the result",
+    desc: "The interface returns output with language detection and style-analysis signals where available.",
+  },
+];
+
 export default function LandingPage() {
   return (
     <>
-      <section className="hero center" style={{ background: "radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)" }}>
-        <div className="container center" style={{ flexDirection: "column", textAlign: "center", gap: 32, maxWidth: "900px", zIndex: 1 }}>
+      <section className="hero">
+        <div className="hero-inner">
+          <div className="fade-in">
+            <span className="hero-eyebrow">Bilingual / Explainable / Corpus-Grounded</span>
+          </div>
+
           <h1 className="fade-in">
-            Thoth — <span className="gradient-text">Bilingual Psycho-Literary Assistant</span>
+            Thoth, a bilingual psycho-literary assistant
           </h1>
-          <p className="lead fade-in" style={{ fontSize: "1.25rem", color: "var(--text-secondary)", animationDelay: "0.1s" }}>
-            Analyze writing, detect biases, and rewrite in the voice of renowned authors.
-            Start with English; Nepali support coming next. Clean UI with explainable insights.
+
+          <p className="lead fade-in">
+            Analyze writing, rewrite it in selected author styles, and continue
+            passages using retrieval from real literary corpora.
           </p>
-          <div className="fade-in" style={{ display: "flex", gap: 16, marginTop: 16, flexWrap: "wrap", justifyContent: "center", animationDelay: "0.2s" }}>
-            <Link to="/login" className="btn primary" style={{ padding: "16px 32px", fontSize: "1.1rem" }}>
-              Get Started
+
+          <div className="hero-actions fade-in">
+            <Link to="/login" className="btn primary btn-large">
+              Open Workspace
             </Link>
-            <a href="#features" className="btn ghost" style={{ padding: "16px 32px", fontSize: "1.1rem" }}>
-              Learn More
+            <a href="#features" className="btn ghost btn-large">
+              View Modules
             </a>
           </div>
         </div>
       </section>
 
-      <section id="features" className="container" style={{ paddingBottom: "5rem" }}>
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <h2 style={{ marginBottom: 16 }}>Key Features</h2>
-          <p className="small" style={{ fontSize: "1.1rem", maxWidth: "600px", margin: "0 auto" }}>
-            Powerful tools to enhance your writing and understand your style
+      <section className="landing-stat-strip">
+        <div className="container">
+          <div className="landing-stat-grid">
+            {stats.map((stat) => (
+              <div key={stat.label} className="fade-in">
+                <div className="landing-stat-value">{stat.value}</div>
+                <div className="landing-stat-label">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="container feature-section">
+        <div className="section-header">
+          <span className="section-label">System Modules</span>
+          <h2>Focused tools for literary style work</h2>
+          <p className="text-muted">
+            Built around retrieval-augmented generation, author corpora, and
+            measurable style signals.
           </p>
         </div>
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem" }}>
-          {[
-            {
-              title: "Author Tone",
-              desc: "Rewriting guided by exemplar-based style sheets. Transform your writing to match the voice of renowned authors.",
-              icon: "✍️"
-            },
-            {
-              title: "Bias & Strengths",
-              desc: "Surface hedging, clarity, rhythm, and vocabulary richness. Get insights into your writing patterns.",
-              icon: "🔍"
-            },
-            {
-              title: "Explainability",
-              desc: "Show 'why': tone tags, anchors, and style stats. Understand the reasoning behind every suggestion.",
-              icon: "💡"
-            },
-          ].map((f, i) => (
-            <div key={i} className="panel feature fade-in" style={{ animationDelay: `${0.3 + (i * 0.1)}s`, display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ fontSize: "48px", marginBottom: "8px" }}>{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p className="small" style={{ margin: 0, fontSize: "1rem", lineHeight: "1.6" }}>{f.desc}</p>
-            </div>
+
+        <div className="feature-grid">
+          {features.map((feature) => (
+            <article key={feature.title} className="panel feature fade-in">
+              <div className="feature-icon">{feature.icon}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.desc}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      <footer style={{ background: "var(--footer-bg)", color: "var(--footer-text)", padding: "2rem 0", textAlign: "center", borderTop: "1px solid var(--card-border)" }}>
+      <section className="landing-pipeline">
         <div className="container">
-          <p style={{ margin: 0 }}>© {new Date().getFullYear()} Thoth. All rights reserved.</p>
+          <div className="section-header">
+            <span className="section-label">Pipeline</span>
+            <h2>How Thoth produces a result</h2>
+          </div>
+
+          <div className="pipeline-list">
+            {pipeline.map((item) => (
+              <article key={item.step} className="pipeline-item fade-in">
+                <div className="pipeline-number">{item.step}</div>
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-cta">
+        <div className="landing-cta-inner">
+          <h2>Move from text to evidence-backed style output</h2>
+          <p className="text-muted">
+            Sign in to test rewriting, continuation, and analysis from the
+            workspace.
+          </p>
+          <Link to="/login" className="btn primary btn-large">
+            Start Testing
+          </Link>
+        </div>
+      </section>
+
+      <footer>
+        <div className="container">
+          <p>Thoth - Bilingual Psycho-Literary Assistant. Built at Herald College Kathmandu.</p>
         </div>
       </footer>
     </>
   );
 }
-
