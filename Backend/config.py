@@ -4,6 +4,8 @@ from dataclasses import dataclass
 @dataclass
 class Config:
     model_dir: str = "./model"
+    database_path: str = "./thoth.db"
+    min_author_sample_words: int = 300
     embed_model: str = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
     en_gen_model: str = "Qwen/Qwen2.5-3B-Instruct"
     ne_gen_model: str = "google/gemma-3-4b-it"

@@ -59,24 +59,28 @@ class AuthorRegistry:
             
         samples = []
         sample_authors = []
+        by_author: Dict[str, List[np.ndarray]] = {a: [] for a in self._authors}
         count = {a: 0 for a in self._authors}
 
         for row in self._store.chunks:
             a = row.get("author", "")
             if a in count and count[a] < sample_per_author:
+                existing_embedding = row.get("embedding")
+                if existing_embedding is not None:
+                    by_author[a].append(np.asarray(existing_embedding, dtype=np.float32))
+                    count[a] += 1
+                    continue
+
                 txt = normalize_ws(row.get("chunk", ""))[:320]
                 if txt:
                     samples.append(txt)
                     sample_authors.append(a)
                     count[a] += 1
 
-        if not samples:
-            return
-
-        embs = self._embedder.encode(samples, normalize=True, batch_size=batch_size)
-        by_author: Dict[str, List[np.ndarray]] = {a: [] for a in self._authors}
-        for a, e in zip(sample_authors, embs):
-            by_author[a].append(e)
+        if samples:
+            embs = self._embedder.encode(samples, normalize=True, batch_size=batch_size)
+            for a, e in zip(sample_authors, embs):
+                by_author[a].append(e)
 
         centroids = {}
         for a, vecs in by_author.items():
