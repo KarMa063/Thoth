@@ -4,6 +4,8 @@
 #   pip install -r requirements.txt
 
 fastapi
+python-multipart
+python-docx
 uvicorn[standard]
 sentence-transformers
 faiss-cpu

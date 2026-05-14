@@ -4,7 +4,7 @@ import EditorPanel from "../components/dashboard/EditorPanel";
 import OutputPanel from "../components/dashboard/OutputPanel";
 import { MICROCOPY, PIPELINE_STEPS, TAB_META } from "../constants/dashboard";
 import { useAuth } from "../context/AuthContext";
-import { analyzeText, continueText, getAuthors, rewriteText } from "../services/api";
+import { addAuthorSample, analyzeText, continueText, getAuthors, reloadAuthors, rewriteText } from "../services/api";
 import { formatAnalysisReport } from "../utils/analysisFormatter";
 
 export default function HomePage() {
@@ -18,6 +18,10 @@ export default function HomePage() {
   const [authorError, setAuthorError] = useState("");
   const [lang, setLang] = useState("");
   const [toast, setToast] = useState("");
+  const [newAuthor, setNewAuthor] = useState("");
+  const [authorFiles, setAuthorFiles] = useState([]);
+  const [savingAuthor, setSavingAuthor] = useState(false);
+  const [sampleError, setSampleError] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const [microcopyIndex, setMicrocopyIndex] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -178,6 +182,44 @@ export default function HomePage() {
     }
   }, [out, showToast]);
 
+  const handleAddAuthor = useCallback(async (event) => {
+    event.preventDefault();
+    const trimmedAuthor = newAuthor.trim();
+    if (!trimmedAuthor || authorFiles.length === 0 || savingAuthor) return;
+
+    setSavingAuthor(true);
+    setSampleError("");
+
+    try {
+      const data = await addAuthorSample({ author: trimmedAuthor, files: authorFiles });
+      const nextAuthors = data.authors || await getAuthors();
+      setAuthors(nextAuthors);
+      setAuthor(data.author || trimmedAuthor);
+      setNewAuthor("");
+      setAuthorFiles([]);
+      setAuthorError("");
+      showToast(`Author style added from ${data.files_processed} file(s)`);
+    } catch (error) {
+      setSampleError(error.message || "Could not add author style");
+    } finally {
+      setSavingAuthor(false);
+    }
+  }, [authorFiles, newAuthor, savingAuthor, showToast]);
+
+  const handleReloadAuthors = useCallback(async () => {
+    try {
+      const authorList = await reloadAuthors();
+      setAuthors(authorList);
+      if (author && !authorList.includes(author)) {
+        setAuthor("");
+      }
+      setAuthorError("");
+      showToast("Authors reloaded");
+    } catch (error) {
+      setAuthorError(error.message || "Author reload failed");
+    }
+  }, [author, showToast]);
+
   const authorStatus = authorError
     ? "Author list unavailable"
     : authors.length > 0
@@ -196,6 +238,9 @@ export default function HomePage() {
         <span className={`workspace-status ${authorError ? "error" : ""}`}>
           {authorStatus}
         </span>
+        <button className="btn ghost btn-compact" type="button" onClick={handleReloadAuthors}>
+          Reload authors
+        </button>
       </header>
 
       {authorError && (
@@ -205,6 +250,54 @@ export default function HomePage() {
       )}
 
       <DashboardTabs activeTab={activeTab} onChange={handleTabChange} />
+
+      <form className="author-sample-panel" onSubmit={handleAddAuthor}>
+        <div className="author-sample-header">
+          <div>
+            <span className="panel-label">Custom Author</span>
+            <h2>Add an author style</h2>
+          </div>
+          <button
+            className="btn primary btn-compact"
+            type="submit"
+            disabled={savingAuthor || !newAuthor.trim() || authorFiles.length === 0}
+          >
+            {savingAuthor ? "Checking..." : "Upload author"}
+          </button>
+        </div>
+        <div className="author-sample-grid">
+          <input
+            className="input"
+            value={newAuthor}
+            onChange={(event) => setNewAuthor(event.target.value)}
+            placeholder="Author name"
+            disabled={savingAuthor}
+          />
+          <label className="author-file-input">
+            <input
+              key={authorFiles.map((file) => file.name).join("|") || "empty-files"}
+              type="file"
+              accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              multiple
+              onChange={(event) => setAuthorFiles(Array.from(event.target.files || []))}
+              disabled={savingAuthor}
+            />
+            <span>
+              {authorFiles.length > 0
+                ? `${authorFiles.length} file(s) selected`
+                : "Choose text or DOCX files"}
+            </span>
+          </label>
+        </div>
+        <p className="author-sample-note">
+          Upload a .txt or .docx file. The backend cleans it and saves it only when the cleaned text reaches 300 words.
+        </p>
+        {sampleError && (
+          <div className="error-inline" role="alert">
+            {sampleError}
+          </div>
+        )}
+      </form>
 
       <div className="editor-layout">
         <EditorPanel

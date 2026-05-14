@@ -14,6 +14,24 @@ export async function getAuthors() {
   return data.authors || [];
 }
 
+export async function reloadAuthors() {
+  const res = await fetch(`${API_BASE}/authors/reload`, { method: "POST" });
+  const data = await parseResponse(res, "Failed to reload authors");
+  return data.authors || [];
+}
+
+export async function addAuthorSample({ author, files }) {
+  const formData = new FormData();
+  formData.append("author", author);
+  files.forEach((file) => formData.append("files", file));
+
+  const res = await fetch(`${API_BASE}/authors`, {
+    method: "POST",
+    body: formData,
+  });
+  return parseResponse(res, "Failed to add author sample");
+}
+
 export async function rewriteText({ text, author, signal }) {
   const res = await fetch(`${API_BASE}/rewrite`, {
     method: "POST",

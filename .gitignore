@@ -8,6 +8,10 @@ faiss.index
 *.index
 *.faiss
 *.pkl
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
 
 # PYTHON
 __pycache__/
@@ -19,6 +23,7 @@ __pycache__/
 venv/
 Backend/venv/
 .env
+*.env.local
 
 #  FRONTEND
 node_modules/

@@ -18,11 +18,14 @@ class RetrieverService:
         chunks = self._store.chunks
         index = self._store.faiss_index
         
-        _, ids = index.search(qv, min(k * 10, len(chunks)))
+        search_k = min(k * 10, len(chunks), index.ntotal)
+        _, ids = index.search(qv, search_k)
 
         hits = []
         al = author.lower().strip()
         for i in ids[0]:
+            if i < 0:
+                continue
             row = chunks[int(i)]
             if row.get("author", "").lower().strip() == al:
                 hits.append(row)
